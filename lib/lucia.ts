@@ -12,7 +12,15 @@ export const lucia = new Lucia(adapter, {
         attributes: {
             secure: process.env.NODE_ENV === 'production',
         }
-    }
+    },
+    getUserAttributes(attributes) {
+        return {
+            id: attributes.id,
+            email: attributes.email,
+            name: attributes.name,
+            role: attributes.role
+        }
+    },
 })
 
 export const getUser = async () => {
@@ -35,15 +43,19 @@ export const getUser = async () => {
 
     }
 
-    const dbUser = await prisma.user.findUnique({
-        where: {
-            id: user?.id
-        },
-        select: {
-            name: true,
-            email: true
-        }
-    })
+    return user
+}
 
-    return dbUser
+declare module "lucia" {
+    interface Register {
+        Lucia: typeof lucia
+        DatabaseUserAttributes: DatabaseUserAttributes
+    }
+
+    interface DatabaseUserAttributes {
+        id: string,
+        email: string,
+        name: string,
+        role: string
+    }
 }
